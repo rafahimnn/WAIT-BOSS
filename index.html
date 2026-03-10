@@ -1340,7 +1340,7 @@
                 <span class="count-label">Secs</span>
             </div>
         </div>
-        <div class="countdown-message" id="countdownMessage">🎂 Surprise at 17 Feb 12:00 AM!</div>
+        <div class="countdown-message" id="countdownMessage">🎂 Surprise at 11 Mar 12:00 AM!</div>
     </div>
 
     <div class="greeting-screen" id="greetingScreen">
@@ -1728,76 +1728,68 @@
             }, 86400000);
         }
 
-function updateCountdown() {
-    const now = new Date();
-    const isBirthdayToday = (now.getMonth() === CONFIG.month && now.getDate() === CONFIG.day);
-    
-    if (isBirthdayToday) {
-        // ---------- জন্মদিনের দিন: সবসময় গ্রিটিং স্ক্রিন দেখাও ----------
-        if (!countdownFinished) {
-            countdownFinished = true;
-            countdownAudio.pause();
-            countdownAudio.currentTime = 0;
+        function updateCountdown() {
+            const now = new Date();
+            const isBirthdayToday = (now.getMonth() === CONFIG.month && now.getDate() === CONFIG.day);
+            
+            if (isBirthdayToday && !countdownFinished) {
+                countdownFinished = true;
+                countdownAudio.pause();
+                countdownAudio.currentTime = 0;
+                
+                // Greeting screen দেখাও
+                document.getElementById('countdownScreen').classList.add('hide');
+                document.getElementById('greetingScreen').classList.add('show');
+                
+                // 🔊 কাউন্টডাউন শেষ, সাথে সাথে birthday audio বাজাও
+                if (!birthdayAudioPlayed) {
+                    birthdayAudio.play()
+                        .then(() => {
+                            birthdayAudioPlayed = true;
+                            console.log("🎵 Birthday audio started automatically");
+                        })
+                        .catch(error => {
+                            console.log("⚠️ Autoplay failed:", error);
+                            // অটোপ্লে ব্যর্থ হলে playBtn দেখাও (Fallback)
+                            document.getElementById('playBtn').classList.remove('hide');
+                        });
+                }
+                
+                historyStack = ['greeting'];
+                history.replaceState({ screen: 'greeting' }, '', '#greeting');
+                
+                if (!confettiShown) {
+                    confettiShown = true;
+                    confetti({ particleCount: 100, spread: 70 });
+                }
+                
+                typeGreeting();
+                scheduleAutoReset();
+                return;
+            }
+            
+            if (!countdownFinished) {
+                const currentYear = now.getFullYear();
+                let birthday = new Date(currentYear, CONFIG.month, CONFIG.day, 0, 0, 0);
+                if (now > birthday) {
+                    birthday = new Date(currentYear + 1, CONFIG.month, CONFIG.day, 0, 0, 0);
+                }
+                const diff = birthday - now;
+                
+                if (diff > 0) {
+                    document.getElementById('days').textContent = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                    document.getElementById('hours').textContent = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+                    document.getElementById('mins').textContent = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, '0');
+                    document.getElementById('secs').textContent = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
+                }
+                
+                if (diff <= 11000 && diff > 0 && !countdownAudioPlayed && audioAllowed) {
+                    countdownAudio.play().then(() => {
+                        countdownAudioPlayed = true;
+                    }).catch(error => {});
+                }
+            }
         }
-        
-        // গ্রিটিং স্ক্রিন দেখাও (যদি আগে না দেখানো হয়)
-        document.getElementById('countdownScreen').classList.add('hide');
-        document.getElementById('greetingScreen').classList.add('show');
-        
-        // কনফেটি মাত্র একবার দেখাও
-        if (!confettiShown) {
-            confettiShown = true;
-            confetti({ particleCount: 100, spread: 70 });
-        }
-        
-        // টাইপিং অ্যানিমেশন শুরু করো (যদি শুরু না হয়)
-        if (charIndex === 0) {
-            typeGreeting();
-        }
-        
-        // birthday audio চালানোর চেষ্টা করো (যদি আগে না বাজে)
-        if (!birthdayAudioPlayed) {
-            birthdayAudio.play()
-                .then(() => {
-                    birthdayAudioPlayed = true;
-                    console.log("🎵 Birthday audio started automatically");
-                })
-                .catch(error => {
-                    console.log("⚠️ Autoplay failed:", error);
-                    document.getElementById('playBtn').classList.remove('hide');
-                });
-        }
-        
-        scheduleAutoReset(); // ২৪ ঘণ্টা পর রিসেট
-        return;
-    }
-    
-    // ---------- জন্মদিন না হলে সাধারণ কাউন্টডাউন ----------
-    countdownFinished = false;
-    document.getElementById('greetingScreen').classList.remove('show');
-    document.getElementById('countdownScreen').classList.remove('hide');
-    
-    const currentYear = now.getFullYear();
-    let birthday = new Date(currentYear, CONFIG.month, CONFIG.day, 0, 0, 0);
-    if (now > birthday) {
-        birthday = new Date(currentYear + 1, CONFIG.month, CONFIG.day, 0, 0, 0);
-    }
-    const diff = birthday - now;
-    
-    if (diff > 0) {
-        document.getElementById('days').textContent = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, '0');
-        document.getElementById('hours').textContent = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
-        document.getElementById('mins').textContent = String(Math.floor((diff / (1000 * 60)) % 60)).padStart(2, '0');
-        document.getElementById('secs').textContent = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
-    }
-    
-    // কাউন্টডাউনের শেষ ১১ সেকেন্ডে কাউন্টডাউন অডিও বাজাও
-    if (diff <= 11000 && diff > 0 && !countdownAudioPlayed && audioAllowed) {
-        countdownAudio.play().then(() => {
-            countdownAudioPlayed = true;
-        }).catch(error => {});
-    }
-}
 
         window.goToCakeScreen = function() {
             // এখানে birthday audio বন্ধ করা নেই, চলতে থাকবে
