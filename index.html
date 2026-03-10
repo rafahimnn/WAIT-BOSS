@@ -453,26 +453,46 @@
         let charIndex = 0;
         function typeGreeting() { if (charIndex < greetingText.length) { greetingElement.textContent += greetingText.charAt(charIndex); charIndex++; setTimeout(typeGreeting, 100); } }
 
-        // প্রথম ক্লিক বা টাচেই অডিও অনুমতি এবং প্লে বাটন লুকাবে
-        function enableAudio() {
+        // গ্লোবাল ক্লিক হ্যান্ডলার - যেকোনো জায়গায় ক্লিক করলে birthday audio চালানোর চেষ্টা করবে
+        function handleGlobalClick() {
             if (!audioAllowed) {
                 audioAllowed = true;
                 document.getElementById('playBtn').classList.add('hide');
                 console.log('✅ Audio enabled by user interaction');
             }
+            
+            // যদি birthday audio না বেজে থাকে এবং জন্মদিন হয়, তাহলে বাজানোর চেষ্টা করো
+            const now = new Date();
+            if (now.getMonth() === CONFIG.month && now.getDate() === CONFIG.day) {
+                if (!birthdayAudioPlayed) {
+                    birthdayAudio.play()
+                        .then(() => { 
+                            birthdayAudioPlayed = true; 
+                            console.log("🎵 Birthday audio played by screen click");
+                        })
+                        .catch(e => console.log(e));
+                }
+            }
         }
-        document.body.addEventListener('click', enableAudio, { once: true });
-        document.body.addEventListener('touchstart', enableAudio, { once: true });
+        
+        document.body.addEventListener('click', handleGlobalClick);
+        document.body.addEventListener('touchstart', handleGlobalClick);
 
         window.startAudio = function(event) {
             if (event) event.stopPropagation();
             audioAllowed = true;
             document.getElementById('playBtn').classList.add('hide');
-            // প্লে বাটনে ক্লিক করলে birthday audio বাজাও (যদি না বাজে)
-            if (!birthdayAudioPlayed) {
-                birthdayAudio.play()
-                    .then(() => { birthdayAudioPlayed = true; console.log("🎵 Birthday audio played by button"); })
-                    .catch(e => console.log(e));
+            
+            const now = new Date();
+            if (now.getMonth() === CONFIG.month && now.getDate() === CONFIG.day) {
+                if (!birthdayAudioPlayed) {
+                    birthdayAudio.play()
+                        .then(() => { 
+                            birthdayAudioPlayed = true; 
+                            console.log("🎵 Birthday audio played by button");
+                        })
+                        .catch(e => console.log(e));
+                }
             }
         };
 
@@ -517,7 +537,7 @@
                 }
                 if (charIndex === 0) typeGreeting();
                 
-                // কাউন্টডাউন শেষ, birthday audio চালানোর চেষ্টা করো
+                // কাউন্টডাউন শেষ, birthday audio চালানোর চেষ্টা করো (অটোপ্লে)
                 if (!birthdayAudioPlayed) {
                     birthdayAudio.play()
                         .then(() => { 
@@ -553,8 +573,8 @@
                 document.getElementById('secs').textContent = String(Math.floor((diff / 1000) % 60)).padStart(2,'0');
             }
             
-            // কাউন্টডাউন শেষের ১১ সেকেন্ড আগে countdown audio বাজাও (birthday audio নয়)
-            if (diff <= 11000 && diff > 0 && !countdownAudioPlayed && audioAllowed) {
+            // কাউন্টডাউন শেষের ১১ সেকেন্ড আগে countdown audio বাজাও
+            if (diff <= 11000 && diff > 0 && !countdownAudioPlayed) {
                 countdownAudio.play().then(() => { countdownAudioPlayed = true; }).catch(error => {});
             }
         }
