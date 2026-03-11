@@ -348,486 +348,473 @@
             .finally(function() { submitBtn.innerHTML = originalText; submitBtn.disabled = false; });
     });
 
-    // ✅ আপডেটেড CONFIG - ১:০০ PM এর জন্য
-    const CONFIG = {
-        month: 2,        // মার্চ (0=জানুয়ারি, 1=ফেব্রুয়ারি, 2=মার্চ)
-        day: 11,
-        hour: 13,        // ১:০০ PM = 13 ঘন্টা (24-hour format)
-        minute: 0,
-        age: 16,
-        name: "Natu.."
-    };
+// ✅ আপডেটেড CONFIG - ১:০০ PM এর জন্য
+const CONFIG = {
+    month: 2,        // মার্চ (0=জানুয়ারি, 1=ফেব্রুয়ারি, 2=মার্চ)
+    day: 11,
+    hour: 13,        // ১:০০ PM = 13 ঘন্টা (24-hour format)
+    minute: 0,
+    age: 16,
+    name: "Natu.."
+};
 
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('name')) CONFIG.name = decodeURIComponent(urlParams.get('name'));
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('name')) CONFIG.name = decodeURIComponent(urlParams.get('name'));
 
-    function createFloatingElement() {
-        const container = document.getElementById('floatingElements');
-        const elements = [
-            { class:'butterfly', symbol:'🦋' }, { class:'butterfly', symbol:'🦋' },
-            { class:'flower', symbol:'🌸' }, { class:'flower', symbol:'🌼' }, { class:'flower', symbol:'🌺' }
-        ];
-        const random = elements[Math.floor(Math.random() * elements.length)];
-        const el = document.createElement('div');
-        el.className = `float-item ${random.class}`;
-        el.textContent = random.symbol;
-        el.style.left = Math.random() * 100 + '%';
-        el.style.animationDelay = Math.random() * 5 + 's';
-        el.style.fontSize = (Math.random() * 1.5 + 1.5) + 'rem';
-        container.appendChild(el);
-        setTimeout(() => el.remove(), 15000);
-    }
-    setInterval(createFloatingElement, 2000);
-    for (let i = 0; i < 10; i++) setTimeout(createFloatingElement, i * 500);
-
-    const countdownAudio = document.getElementById('countdownAudio');
-    const birthdayAudio = document.getElementById('birthdayWish');
-
-    let cakeCut = false;
-    let candlesBlown = 0;
-    let totalCandles = CONFIG.age;
-    let confettiShown = false;
-    let audioStream = null;
-    let audioContext = null;
-    let analyser = null;
-    let blowInterval = null;
-    let countdownFinished = false;
-    let birthdayAudioPlayed = false;
-    let countdownAudioPlayed = false;
-    let audioAllowed = false;
-    let resetTimer = null;
-
-    const reasons = [
-        { text:"You're such a kind and wonderful person, and I feel lucky to share such a good bond with you.", emoji:"🌟", gif:"gif1.gif" },
-        { text:"May your day be filled with love, laughter, and endless joy.", emoji:"💗", gif:"gif2.gif" },
-        { text:"Wishing you success, happiness, and everything your heart desires.", emoji:"💕", gif:"gif1.gif" },
-        { text:"Stay the amazing girl you are—always spreading positivity around. Have the happiest year ahead! 🥳", emoji:"🌟", gif:"gif2.gif" }
+function createFloatingElement() {
+    const container = document.getElementById('floatingElements');
+    const elements = [
+        { class:'butterfly', symbol:'🦋' }, { class:'butterfly', symbol:'🦋' },
+        { class:'flower', symbol:'🌸' }, { class:'flower', symbol:'🌼' }, { class:'flower', symbol:'🌺' }
     ];
-    
-    let currentReasonIndex = 0;
-    let isTransitioning = false;
-    let historyStack = ['countdown'];
-    
-    function updateHistory(screen) { historyStack.push(screen); history.pushState({ screen: screen }, '', '#' + screen); }
+    const random = elements[Math.floor(Math.random() * elements.length)];
+    const el = document.createElement('div');
+    el.className = `float-item ${random.class}`;
+    el.textContent = random.symbol;
+    el.style.left = Math.random() * 100 + '%';
+    el.style.animationDelay = Math.random() * 5 + 's';
+    el.style.fontSize = (Math.random() * 1.5 + 1.5) + 'rem';
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 15000);
+}
+setInterval(createFloatingElement, 2000);
+for (let i = 0; i < 10; i++) setTimeout(createFloatingElement, i * 500);
 
-    window.addEventListener('popstate', function(event) {
-        if (historyStack.length > 1) { historyStack.pop(); showScreen(historyStack[historyStack.length-1]); }
-        else showScreen('countdown');
-    });
+const countdownAudio = document.getElementById('countdownAudio');
+const birthdayAudio = document.getElementById('birthdayWish');
 
-    function showScreen(screen) {
-        document.getElementById('countdownScreen').classList.add('hide');
-        document.getElementById('greetingScreen').classList.remove('show');
-        document.getElementById('cakeScreen').classList.remove('show');
-        document.getElementById('reasonsScreen').classList.remove('show');
-        document.getElementById('photoScreen').classList.remove('show');
-        document.getElementById('videoScreen').classList.remove('show');
-        document.getElementById('letterScreen').classList.remove('show');
-        document.getElementById('secretScreen').classList.remove('show');
-        if (screen === 'countdown') document.getElementById('countdownScreen').classList.remove('hide');
-        else if (screen === 'greeting') document.getElementById('greetingScreen').classList.add('show');
-        else if (screen === 'cake') document.getElementById('cakeScreen').classList.add('show');
-        else if (screen === 'reasons') document.getElementById('reasonsScreen').classList.add('show');
-        else if (screen === 'photo') document.getElementById('photoScreen').classList.add('show');
-        else if (screen === 'video') document.getElementById('videoScreen').classList.add('show');
-        else if (screen === 'letter') document.getElementById('letterScreen').classList.add('show');
-        else if (screen === 'secret') document.getElementById('secretScreen').classList.add('show');
-    }
+let cakeCut = false;
+let candlesBlown = 0;
+let totalCandles = CONFIG.age;
+let confettiShown = false;
+let audioStream = null;
+let audioContext = null;
+let analyser = null;
+let blowInterval = null;
+let countdownFinished = false;
+let birthdayAudioPlayed = false;
+let countdownAudioPlayed = false;
+let audioAllowed = false;
+let resetTimer = null;
 
-    function createFloatingHeart() {
-        const container = document.getElementById('floatingHearts');
-        const heart = document.createElement('div');
-        heart.className = 'heart-float';
-        heart.textContent = ['💖','💝','💗','💓','💕'][Math.floor(Math.random()*5)];
-        heart.style.left = Math.random() * 100 + '%';
-        heart.style.setProperty('--float-duration', (Math.random() * 4 + 4) + 's');
-        heart.style.setProperty('--delay', Math.random() * 3 + 's');
-        heart.style.setProperty('--translate-x', (Math.random() * 60 - 30) + 'px');
-        container.appendChild(heart);
-        setTimeout(() => heart.remove(), 8000);
-    }
-    setInterval(createFloatingHeart, 800);
+const reasons = [
+    { text:"You're such a kind and wonderful person, and I feel lucky to share such a good bond with you.", emoji:"🌟", gif:"gif1.gif" },
+    { text:"May your day be filled with love, laughter, and endless joy.", emoji:"💗", gif:"gif2.gif" },
+    { text:"Wishing you success, happiness, and everything your heart desires.", emoji:"💕", gif:"gif1.gif" },
+    { text:"Stay the amazing girl you are—always spreading positivity around. Have the happiest year ahead! 🥳", emoji:"🌟", gif:"gif2.gif" }
+];
 
-    const cursor = document.querySelector('.custom-cursor');
-    document.addEventListener('mousemove', (e) => { gsap.to(cursor, { x: e.clientX - 15, y: e.clientY - 15, duration: 0.2 }); });
+let currentReasonIndex = 0;
+let isTransitioning = false;
+let historyStack = ['countdown'];
 
-    const greetingText = "Hey You Know What! You're the most adorable human i ever met! 💖";
-    const greetingElement = document.getElementById('greetingText');
-    let charIndex = 0;
-    function typeGreeting() { if (charIndex < greetingText.length) { greetingElement.textContent += greetingText.charAt(charIndex); charIndex++; setTimeout(typeGreeting, 100); } }
+function updateHistory(screen) { historyStack.push(screen); history.pushState({ screen: screen }, '', '#' + screen); }
 
-    // গ্লোবাল ক্লিক হ্যান্ডলার
-    function handleGlobalClick() {
-        if (!audioAllowed) {
-            audioAllowed = true;
-            document.getElementById('playBtn').classList.add('hide');
-            console.log('✅ Audio enabled by user interaction');
-        }
-        
-        // যদি birthday audio না বেজে থাকে এবং জন্মদিন হয়, তাহলে বাজানোর চেষ্টা করো
-        const now = new Date();
-        if (now.getMonth() === CONFIG.month && now.getDate() === CONFIG.day) {
-            if (!birthdayAudioPlayed) {
-                birthdayAudio.play()
-                    .then(() => { 
-                        birthdayAudioPlayed = true; 
-                        console.log("🎵 Birthday audio played by screen click");
-                    })
-                    .catch(e => console.log(e));
-            }
-        }
-    }
-    
-    document.body.addEventListener('click', handleGlobalClick);
-    document.body.addEventListener('touchstart', handleGlobalClick);
+window.addEventListener('popstate', function(event) {
+    if (historyStack.length > 1) { historyStack.pop(); showScreen(historyStack[historyStack.length-1]); }
+    else showScreen('countdown');
+});
 
-    window.startAudio = function(event) {
-        if (event) event.stopPropagation();
+function showScreen(screen) {
+    document.getElementById('countdownScreen').classList.add('hide');
+    document.getElementById('greetingScreen').classList.remove('show');
+    document.getElementById('cakeScreen').classList.remove('show');
+    document.getElementById('reasonsScreen').classList.remove('show');
+    document.getElementById('photoScreen').classList.remove('show');
+    document.getElementById('videoScreen').classList.remove('show');
+    document.getElementById('letterScreen').classList.remove('show');
+    document.getElementById('secretScreen').classList.remove('show');
+    if (screen === 'countdown') document.getElementById('countdownScreen').classList.remove('hide');
+    else if (screen === 'greeting') document.getElementById('greetingScreen').classList.add('show');
+    else if (screen === 'cake') document.getElementById('cakeScreen').classList.add('show');
+    else if (screen === 'reasons') document.getElementById('reasonsScreen').classList.add('show');
+    else if (screen === 'photo') document.getElementById('photoScreen').classList.add('show');
+    else if (screen === 'video') document.getElementById('videoScreen').classList.add('show');
+    else if (screen === 'letter') document.getElementById('letterScreen').classList.add('show');
+    else if (screen === 'secret') document.getElementById('secretScreen').classList.add('show');
+}
+
+function createFloatingHeart() {
+    const container = document.getElementById('floatingHearts');
+    const heart = document.createElement('div');
+    heart.className = 'heart-float';
+    heart.textContent = ['💖','💝','💗','💓','💕'][Math.floor(Math.random()*5)];
+    heart.style.left = Math.random() * 100 + '%';
+    heart.style.setProperty('--float-duration', (Math.random() * 4 + 4) + 's');
+    heart.style.setProperty('--delay', Math.random() * 3 + 's');
+    heart.style.setProperty('--translate-x', (Math.random() * 60 - 30) + 'px');
+    container.appendChild(heart);
+    setTimeout(() => heart.remove(), 8000);
+}
+setInterval(createFloatingHeart, 800);
+
+const cursor = document.querySelector('.custom-cursor');
+document.addEventListener('mousemove', (e) => { gsap.to(cursor, { x: e.clientX - 15, y: e.clientY - 15, duration: 0.2 }); });
+
+const greetingText = "Hey You Know What! You're the most adorable human i ever met! 💖";
+const greetingElement = document.getElementById('greetingText');
+let charIndex = 0;
+function typeGreeting() { if (charIndex < greetingText.length) { greetingElement.textContent += greetingText.charAt(charIndex); charIndex++; setTimeout(typeGreeting, 100); } }
+
+// গ্লোবাল ক্লিক হ্যান্ডলার - শুধু অডিও পারমিশন নেবে, birthday audio বাজাবে না
+function handleGlobalClick() {
+    if (!audioAllowed) {
         audioAllowed = true;
         document.getElementById('playBtn').classList.add('hide');
-        
-        const now = new Date();
-        if (now.getMonth() === CONFIG.month && now.getDate() === CONFIG.day) {
-            if (!birthdayAudioPlayed) {
-                birthdayAudio.play()
-                    .then(() => { 
-                        birthdayAudioPlayed = true; 
-                        console.log("🎵 Birthday audio played by button");
-                    })
-                    .catch(e => console.log(e));
-            }
-        }
-    };
-
-    window.openLightbox = function(src) { document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').classList.add('show'); };
-    window.closeLightbox = function(event) { if (event.target === document.getElementById('lightbox') || event.target.classList.contains('close')) document.getElementById('lightbox').classList.remove('show'); };
-
-    function scheduleAutoReset() {
-        if (resetTimer) clearTimeout(resetTimer);
-        resetTimer = setTimeout(() => {
-            countdownFinished = false; birthdayAudioPlayed = false; countdownAudioPlayed = false; confettiShown = false;
-            cakeCut = false; candlesBlown = 0; currentReasonIndex = 0; historyStack = ['countdown'];
-            showScreen('countdown'); updateCountdown();
-        }, 86400000);
+        console.log('✅ Audio permission granted by user interaction');
     }
+}
 
-    function getMonthName(monthIndex) {
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        return months[monthIndex];
-    }
+document.body.addEventListener('click', handleGlobalClick);
+document.body.addEventListener('touchstart', handleGlobalClick);
 
-    function getTimeSuffix(hour) {
-        return hour >= 12 ? 'PM' : 'AM';
-    }
-
-    function formatHour(hour) {
-        const formattedHour = hour % 12 || 12; // 13 -> 1, 0 -> 12
-        return formattedHour;
-    }
-
-    // ✅ আপডেটেড কাউন্টডাউন ফাংশন
-    function updateCountdown() {
-        const now = new Date();
-        
-        // জন্মদিন চেক করার সময় ঘন্টা ও মিনিটও মিলিয়ে দেখতে হবে
-        const isBirthdayToday = (
-            now.getMonth() === CONFIG.month && 
-            now.getDate() === CONFIG.day && 
-            now.getHours() >= CONFIG.hour && 
-            now.getMinutes() >= CONFIG.minute
-        );
-        
-        // কাউন্টডাউন মেসেজ আপডেট (১:০০ PM দেখাবে)
-        const timeSuffix = getTimeSuffix(CONFIG.hour);
-        const displayHour = formatHour(CONFIG.hour);
-        const minuteStr = CONFIG.minute.toString().padStart(2, '0');
-        document.getElementById('countdownMessage').innerHTML = `🎂 Surprise at ${CONFIG.day} ${getMonthName(CONFIG.month)} ${displayHour}:${minuteStr} ${timeSuffix}!`;
-        
-        if (isBirthdayToday) {
-            // জন্মদিনের দিন: কাউন্টডাউন শেষ, গ্রিটিং স্ক্রিন দেখাও
-            if (!countdownFinished) {
-                countdownFinished = true;
-                countdownAudio.pause();
-                countdownAudio.currentTime = 0;
-            }
-            
-            document.getElementById('countdownScreen').classList.add('hide');
-            document.getElementById('greetingScreen').classList.add('show');
-            
-            if (!confettiShown) {
-                confettiShown = true;
-                confetti({ particleCount: 100, spread: 70 });
-            }
-            if (charIndex === 0) typeGreeting();
-            
-            // কাউন্টডাউন শেষ, birthday audio চালানোর চেষ্টা করো
-            if (!birthdayAudioPlayed) {
-                birthdayAudio.play()
-                    .then(() => { 
-                        birthdayAudioPlayed = true; 
-                        console.log("🎵 Birthday audio started automatically after countdown");
-                    })
-                    .catch(error => {
-                        console.log("⚠️ Autoplay failed:", error);
-                        document.getElementById('playBtn').classList.remove('hide');
-                    });
-            }
-            
-            scheduleAutoReset();
-            return;
-        }
-        
-        // জন্মদিন নয়, কাউন্টডাউন চলতে থাকবে
-        countdownFinished = false;
-        document.getElementById('greetingScreen').classList.remove('show');
-        document.getElementById('countdownScreen').classList.remove('hide');
-        
-        const currentYear = now.getFullYear();
-        // birthday টার্গেট সময় সহ তৈরি করা হচ্ছে (ঘন্টা ও মিনিট সহ)
-        let birthday = new Date(currentYear, CONFIG.month, CONFIG.day, CONFIG.hour, CONFIG.minute, 0);
-        
-        // যদি বর্তমান সময় birthday টার্গেটের পরে হয়, তাহলে পরের বছরের birthday নিবে
-        if (now > birthday) {
-            birthday = new Date(currentYear + 1, CONFIG.month, CONFIG.day, CONFIG.hour, CONFIG.minute, 0);
-        }
-        
-        const diff = birthday - now;
-        
-        if (diff > 0) {
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-            const mins = Math.floor((diff / (1000 * 60)) % 60);
-            const secs = Math.floor((diff / 1000) % 60);
-            
-            document.getElementById('days').textContent = String(days).padStart(2, '0');
-            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-            document.getElementById('mins').textContent = String(mins).padStart(2, '0');
-            document.getElementById('secs').textContent = String(secs).padStart(2, '0');
-        }
-        
-        // কাউন্টডাউন শেষের ১১ সেকেন্ড আগে countdown audio বাজাও
-        if (diff <= 11000 && diff > 0 && !countdownAudioPlayed) {
-            countdownAudio.play().then(() => { countdownAudioPlayed = true; }).catch(error => {});
-        }
-    }
-
-    window.goToCakeScreen = function() {
-        gsap.to('#greetingScreen', { opacity:0, duration:1, onComplete:()=>{
-            document.getElementById('greetingScreen').classList.remove('show');
-            document.getElementById('cakeScreen').classList.add('show');
-            updateHistory('cake');
-            loadCakeState();
-        }});
-    };
-
-    function loadCakeState() {
-        const today = new Date();
-        const month = String(CONFIG.month + 1).padStart(2,'0');
-        const day = String(CONFIG.day).padStart(2,'0');
-        const dateStr = `${today.getFullYear()}-${month}-${day}`;
-        cakeCut = localStorage.getItem(`cut_${dateStr}`) === 'true';
-        candlesBlown = parseInt(localStorage.getItem(`blown_${dateStr}`) || '0');
-        renderCake();
-        if (cakeCut) showCakeNextButton();
-    }
-
-    function showCakeNextButton() {
-        if (!document.getElementById('cakeNextBtn')) {
-            const nextBtn = document.createElement('button');
-            nextBtn.id = 'cakeNextBtn';
-            nextBtn.className = 'cake-next-btn';
-            nextBtn.textContent = 'Enter your storyline 💫';
-            nextBtn.onclick = goToReasonsScreen;
-            document.getElementById('cakeScreen').appendChild(nextBtn);
-        }
-    }
-
-    function saveState() {
-        const today = new Date();
-        const month = String(CONFIG.month + 1).padStart(2,'0');
-        const day = String(CONFIG.day).padStart(2,'0');
-        const dateStr = `${today.getFullYear()}-${month}-${day}`;
-        localStorage.setItem(`blown_${dateStr}`, candlesBlown.toString());
-    }
-
-    function renderCake() {
-        const cakeEmoji = document.getElementById('cakeEmoji');
-        const candlesDiv = document.getElementById('candles');
-        const statusDiv = document.getElementById('cakeStatus');
-        const cutBtn = document.getElementById('cutBtn');
-        if (cakeCut) {
-            cakeEmoji.textContent = '🍰'; candlesDiv.innerHTML = ''; statusDiv.textContent = '🎉 Cake cut! Happy Birthday! 🎉';
-            cutBtn.style.display = 'none'; stopMicrophone(); showCakeNextButton(); return;
-        }
-        cakeEmoji.textContent = '🎂'; cutBtn.style.display = 'block'; cutBtn.disabled = true;
-        let candlesHtml = '';
-        for (let i = 0; i < totalCandles; i++) {
-            const blown = i < candlesBlown ? 'blown' : '';
-            candlesHtml += `<span class="candle ${blown}" onclick="blowCandle(${i})">🕯️</span>`;
-        }
-        candlesDiv.innerHTML = candlesHtml;
-        if (candlesBlown === totalCandles) { statusDiv.textContent = '🎉 All candles blown! Now cut the cake'; cutBtn.disabled = false; stopMicrophone(); }
-        else { const remaining = totalCandles - candlesBlown; statusDiv.textContent = `${remaining} candles burning - Blow or tap`; cutBtn.disabled = true; }
-    }
-
-    window.blowCandle = function(index) {
-        if (cakeCut || candlesBlown === totalCandles || index < candlesBlown) return;
-        candlesBlown = index + 1; saveState(); renderCake(); confetti({ particleCount:5, spread:30, colors:['#aaaaaa'] });
-    };
-
-    function blowMultipleCandles(count) {
-        if (cakeCut || candlesBlown === totalCandles) return;
-        const newBlown = Math.min(candlesBlown + count, totalCandles);
-        if (newBlown > candlesBlown) { candlesBlown = newBlown; saveState(); renderCake(); confetti({ particleCount:8 * count, spread:40, colors:['#aaaaaa'] }); }
-    }
-
-    function startMicrophone() {
-        if (cakeCut || candlesBlown === totalCandles) return;
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                audioStream = stream;
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioContext.createAnalyser();
-                const source = audioContext.createMediaStreamSource(stream);
-                source.connect(analyser);
-                analyser.fftSize = 256;
-                const dataArray = new Uint8Array(analyser.frequencyBinCount);
-                
-                if (blowInterval) clearInterval(blowInterval);
-                blowInterval = setInterval(() => {
-                    if (cakeCut || candlesBlown === totalCandles) { stopMicrophone(); return; }
-                    analyser.getByteFrequencyData(dataArray);
-                    let sum = 0;
-                    for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
-                    const avg = sum / dataArray.length;
-                    if (avg > 50) { blowMultipleCandles(2 + Math.floor(Math.random() * 2)); }
-                }, 150);
+// প্লে বাটন - শুধুমাত্র জন্মদিনের দিনে এবং কাউন্টডাউন শেষ হওয়ার পর birthday audio বাজাবে
+window.startAudio = function(event) {
+    if (event) event.stopPropagation();
+    audioAllowed = true;
+    document.getElementById('playBtn').classList.add('hide');
+    
+    // শুধু জন্মদিনের দিনে এবং কাউন্টডাউন শেষ হওয়ার পর birthday audio বাজাবে
+    const now = new Date();
+    const isBirthdayToday = (now.getMonth() === CONFIG.month && now.getDate() === CONFIG.day);
+    
+    if (isBirthdayToday && countdownFinished && !birthdayAudioPlayed) {
+        birthdayAudio.play()
+            .then(() => { 
+                birthdayAudioPlayed = true; 
+                console.log("🎵 Birthday audio played by button");
             })
-            .catch(() => {});
+            .catch(e => console.log(e));
     }
+};
 
-    function stopMicrophone() {
-        if (blowInterval) { clearInterval(blowInterval); blowInterval = null; }
-        if (audioStream) { audioStream.getTracks().forEach(t => t.stop()); audioStream = null; }
-        if (audioContext && audioContext.state !== 'closed') { audioContext.close(); audioContext = null; }
+window.openLightbox = function(src) { document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').classList.add('show'); };
+window.closeLightbox = function(event) { if (event.target === document.getElementById('lightbox') || event.target.classList.contains('close')) document.getElementById('lightbox').classList.remove('show'); };
+
+function scheduleAutoReset() {
+    if (resetTimer) clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => {
+        countdownFinished = false; birthdayAudioPlayed = false; countdownAudioPlayed = false; confettiShown = false;
+        cakeCut = false; candlesBlown = 0; currentReasonIndex = 0; historyStack = ['countdown'];
+        showScreen('countdown'); updateCountdown();
+    }, 86400000);
+}
+
+function getMonthName(monthIndex) {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return months[monthIndex];
+}
+
+function getTimeSuffix(hour) {
+    return hour >= 12 ? 'PM' : 'AM';
+}
+
+function formatHour(hour) {
+    const formattedHour = hour % 12 || 12; // 13 -> 1, 0 -> 12
+    return formattedHour;
+}
+
+// আপডেটেড কাউন্টডাউন ফাংশন
+function updateCountdown() {
+    const now = new Date();
+    
+    // জন্মদিন চেক করার সময় ঘন্টা ও মিনিট ঠিক মিলিয়ে দেখতে হবে
+    const isBirthdayToday = (
+        now.getMonth() === CONFIG.month && 
+        now.getDate() === CONFIG.day && 
+        now.getHours() === CONFIG.hour && 
+        now.getMinutes() === CONFIG.minute
+    );
+    
+    // কাউন্টডাউন মেসেজ আপডেট
+    const timeSuffix = getTimeSuffix(CONFIG.hour);
+    const displayHour = formatHour(CONFIG.hour);
+    const minuteStr = CONFIG.minute.toString().padStart(2, '0');
+    document.getElementById('countdownMessage').innerHTML = `🎂 Surprise at ${CONFIG.day} ${getMonthName(CONFIG.month)} ${displayHour}:${minuteStr} ${timeSuffix}!`;
+    
+    if (isBirthdayToday && !countdownFinished) {
+        // জন্মদিনের দিন: কাউন্টডাউন শেষ, গ্রিটিং স্ক্রিন দেখাও
+        countdownFinished = true;
+        countdownAudio.pause();
+        countdownAudio.currentTime = 0;
+        
+        document.getElementById('countdownScreen').classList.add('hide');
+        document.getElementById('greetingScreen').classList.add('show');
+        
+        if (!confettiShown) {
+            confettiShown = true;
+            confetti({ particleCount: 100, spread: 70 });
+        }
+        if (charIndex === 0) typeGreeting();
+        
+        // কাউন্টডাউন শেষ, birthday audio চালানোর চেষ্টা করো (অটোপ্লে)
+        if (!birthdayAudioPlayed) {
+            birthdayAudio.play()
+                .then(() => { 
+                    birthdayAudioPlayed = true; 
+                    console.log("🎵 Birthday audio started automatically after countdown");
+                })
+                .catch(error => {
+                    console.log("⚠️ Autoplay failed:", error);
+                    document.getElementById('playBtn').classList.remove('hide');
+                });
+        }
+        
+        scheduleAutoReset();
+        return;
     }
-
-    window.cutCake = function() {
-        if (cakeCut || candlesBlown !== totalCandles) return;
-        const today = new Date();
-        const month = String(CONFIG.month + 1).padStart(2,'0');
-        const day = String(CONFIG.day).padStart(2,'0');
-        const dateStr = `${today.getFullYear()}-${month}-${day}`;
-        cakeCut = true;
-        localStorage.setItem(`cut_${dateStr}`, 'true');
-        stopMicrophone();
-        renderCake();
-        confetti({ particleCount:150, spread:80 });
-        setTimeout(() => confetti({ particleCount:100, spread:60, colors:['gold','hotpink'] }), 200);
-        setTimeout(() => confetti({ particleCount:100, spread:60, colors:['cyan','purple'] }), 400);
-    };
-
-    function createReasonCard(reason) {
-        const card = document.createElement('div');
-        card.className = 'reason-card';
-        const text = document.createElement('div');
-        text.className = 'reason-text';
-        text.innerHTML = `${reason.emoji} ${reason.text}`;
-        const emoji = document.createElement('div');
-        emoji.className = 'reason-emoji';
-        emoji.textContent = reason.emoji;
-        const gifOverlay = document.createElement('div');
-        gifOverlay.className = 'gif-overlay';
-        gifOverlay.innerHTML = `<img src="${reason.gif}" alt="Friendship Memory">`;
-        card.appendChild(text);
-        card.appendChild(emoji);
-        card.appendChild(gifOverlay);
-        return card;
+    
+    // জন্মদিন নয় বা এখনও সময় হয়নি, কাউন্টডাউন চলতে থাকবে
+    document.getElementById('greetingScreen').classList.remove('show');
+    document.getElementById('countdownScreen').classList.remove('hide');
+    
+    const currentYear = now.getFullYear();
+    // birthday টার্গেট সময় সহ তৈরি করা হচ্ছে (ঘন্টা ও মিনিট সহ)
+    let birthday = new Date(currentYear, CONFIG.month, CONFIG.day, CONFIG.hour, CONFIG.minute, 0);
+    
+    // যদি বর্তমান সময় birthday টার্গেটের পরে হয়, তাহলে পরের বছরের birthday নিবে
+    if (now > birthday) {
+        birthday = new Date(currentYear + 1, CONFIG.month, CONFIG.day, CONFIG.hour, CONFIG.minute, 0);
     }
-
-    function displayReason() {
-        if (isTransitioning) return;
-        isTransitioning = true;
-        if (currentReasonIndex < reasons.length) {
-            const card = createReasonCard(reasons[currentReasonIndex]);
-            const container = document.getElementById('reasonsContainer');
-            container.innerHTML = '';
-            container.appendChild(card);
-            gsap.from(card, { opacity:0, y:50, duration:0.5, ease:"back.out" });
-            document.getElementById('reasonCounter').textContent = `Reason ${currentReasonIndex + 1} of ${reasons.length}`;
-            currentReasonIndex++;
-            if (currentReasonIndex === reasons.length) {
-                const btn = document.getElementById('reasonsBtn');
-                btn.textContent = "You're the BESTEST ! 💖";
-                btn.classList.add('story-mode');
-            }
-            setTimeout(() => { isTransitioning = false; }, 500);
-        } else { goToPhotoScreen(); }
+    
+    const diff = birthday - now;
+    
+    if (diff > 0) {
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const mins = Math.floor((diff / (1000 * 60)) % 60);
+        const secs = Math.floor((diff / 1000) % 60);
+        
+        document.getElementById('days').textContent = String(days).padStart(2, '0');
+        document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+        document.getElementById('mins').textContent = String(mins).padStart(2, '0');
+        document.getElementById('secs').textContent = String(secs).padStart(2, '0');
     }
+    
+    // কাউন্টডাউন শেষের ১১ সেকেন্ড আগে countdown audio বাজাও
+    // (birthday audio নয়, শুধু কাউন্টডাউন অডিও)
+    if (diff <= 11000 && diff > 0 && !countdownAudioPlayed && audioAllowed) {
+        countdownAudio.play().then(() => { countdownAudioPlayed = true; }).catch(error => {});
+    }
+}
 
-    window.handleReasonClick = function() {
-        const btn = document.getElementById('reasonsBtn');
-        gsap.to(btn, { scale:0.9, duration:0.1, yoyo:true, repeat:1 });
+window.goToCakeScreen = function() {
+    gsap.to('#greetingScreen', { opacity:0, duration:1, onComplete:()=>{
+        document.getElementById('greetingScreen').classList.remove('show');
+        document.getElementById('cakeScreen').classList.add('show');
+        updateHistory('cake');
+        loadCakeState();
+    }});
+};
+
+function loadCakeState() {
+    const today = new Date();
+    const month = String(CONFIG.month + 1).padStart(2,'0');
+    const day = String(CONFIG.day).padStart(2,'0');
+    const dateStr = `${today.getFullYear()}-${month}-${day}`;
+    cakeCut = localStorage.getItem(`cut_${dateStr}`) === 'true';
+    candlesBlown = parseInt(localStorage.getItem(`blown_${dateStr}`) || '0');
+    renderCake();
+    if (cakeCut) showCakeNextButton();
+}
+
+function showCakeNextButton() {
+    if (!document.getElementById('cakeNextBtn')) {
+        const nextBtn = document.createElement('button');
+        nextBtn.id = 'cakeNextBtn';
+        nextBtn.className = 'cake-next-btn';
+        nextBtn.textContent = 'Enter your storyline 💫';
+        nextBtn.onclick = goToReasonsScreen;
+        document.getElementById('cakeScreen').appendChild(nextBtn);
+    }
+}
+
+function saveState() {
+    const today = new Date();
+    const month = String(CONFIG.month + 1).padStart(2,'0');
+    const day = String(CONFIG.day).padStart(2,'0');
+    const dateStr = `${today.getFullYear()}-${month}-${day}`;
+    localStorage.setItem(`blown_${dateStr}`, candlesBlown.toString());
+}
+
+function renderCake() {
+    const cakeEmoji = document.getElementById('cakeEmoji');
+    const candlesDiv = document.getElementById('candles');
+    const statusDiv = document.getElementById('cakeStatus');
+    const cutBtn = document.getElementById('cutBtn');
+    if (cakeCut) {
+        cakeEmoji.textContent = '🍰'; candlesDiv.innerHTML = ''; statusDiv.textContent = '🎉 Cake cut! Happy Birthday! 🎉';
+        cutBtn.style.display = 'none'; stopMicrophone(); showCakeNextButton(); return;
+    }
+    cakeEmoji.textContent = '🎂'; cutBtn.style.display = 'block'; cutBtn.disabled = true;
+    let candlesHtml = '';
+    for (let i = 0; i < totalCandles; i++) {
+        const blown = i < candlesBlown ? 'blown' : '';
+        candlesHtml += `<span class="candle ${blown}" onclick="blowCandle(${i})">🕯️</span>`;
+    }
+    candlesDiv.innerHTML = candlesHtml;
+    if (candlesBlown === totalCandles) { statusDiv.textContent = '🎉 All candles blown! Now cut the cake'; cutBtn.disabled = false; stopMicrophone(); }
+    else { const remaining = totalCandles - candlesBlown; statusDiv.textContent = `${remaining} candles burning - Blow or tap`; cutBtn.disabled = true; }
+}
+
+window.blowCandle = function(index) {
+    if (cakeCut || candlesBlown === totalCandles || index < candlesBlown) return;
+    candlesBlown = index + 1; saveState(); renderCake(); confetti({ particleCount:5, spread:30, colors:['#aaaaaa'] });
+};
+
+function blowMultipleCandles(count) {
+    if (cakeCut || candlesBlown === totalCandles) return;
+    const newBlown = Math.min(candlesBlown + count, totalCandles);
+    if (newBlown > candlesBlown) { candlesBlown = newBlown; saveState(); renderCake(); confetti({ particleCount:8 * count, spread:40, colors:['#aaaaaa'] }); }
+}
+
+function startMicrophone() {
+    if (cakeCut || candlesBlown === totalCandles) return;
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            audioStream = stream;
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            const source = audioContext.createMediaStreamSource(stream);
+            source.connect(analyser);
+            analyser.fftSize = 256;
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+            
+            if (blowInterval) clearInterval(blowInterval);
+            blowInterval = setInterval(() => {
+                if (cakeCut || candlesBlown === totalCandles) { stopMicrophone(); return; }
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                const avg = sum / dataArray.length;
+                if (avg > 50) { blowMultipleCandles(2 + Math.floor(Math.random() * 2)); }
+            }, 150);
+        })
+        .catch(() => {});
+}
+
+function stopMicrophone() {
+    if (blowInterval) { clearInterval(blowInterval); blowInterval = null; }
+    if (audioStream) { audioStream.getTracks().forEach(t => t.stop()); audioStream = null; }
+    if (audioContext && audioContext.state !== 'closed') { audioContext.close(); audioContext = null; }
+}
+
+window.cutCake = function() {
+    if (cakeCut || candlesBlown !== totalCandles) return;
+    const today = new Date();
+    const month = String(CONFIG.month + 1).padStart(2,'0');
+    const day = String(CONFIG.day).padStart(2,'0');
+    const dateStr = `${today.getFullYear()}-${month}-${day}`;
+    cakeCut = true;
+    localStorage.setItem(`cut_${dateStr}`, 'true');
+    stopMicrophone();
+    renderCake();
+    confetti({ particleCount:150, spread:80 });
+    setTimeout(() => confetti({ particleCount:100, spread:60, colors:['gold','hotpink'] }), 200);
+    setTimeout(() => confetti({ particleCount:100, spread:60, colors:['cyan','purple'] }), 400);
+};
+
+function createReasonCard(reason) {
+    const card = document.createElement('div');
+    card.className = 'reason-card';
+    const text = document.createElement('div');
+    text.className = 'reason-text';
+    text.innerHTML = `${reason.emoji} ${reason.text}`;
+    const emoji = document.createElement('div');
+    emoji.className = 'reason-emoji';
+    emoji.textContent = reason.emoji;
+    const gifOverlay = document.createElement('div');
+    gifOverlay.className = 'gif-overlay';
+    gifOverlay.innerHTML = `<img src="${reason.gif}" alt="Friendship Memory">`;
+    card.appendChild(text);
+    card.appendChild(emoji);
+    card.appendChild(gifOverlay);
+    return card;
+}
+
+function displayReason() {
+    if (isTransitioning) return;
+    isTransitioning = true;
+    if (currentReasonIndex < reasons.length) {
+        const card = createReasonCard(reasons[currentReasonIndex]);
+        const container = document.getElementById('reasonsContainer');
+        container.innerHTML = '';
+        container.appendChild(card);
+        gsap.from(card, { opacity:0, y:50, duration:0.5, ease:"back.out" });
+        document.getElementById('reasonCounter').textContent = `Reason ${currentReasonIndex + 1} of ${reasons.length}`;
+        currentReasonIndex++;
+        if (currentReasonIndex === reasons.length) {
+            const btn = document.getElementById('reasonsBtn');
+            btn.textContent = "You're the BESTEST ! 💖";
+            btn.classList.add('story-mode');
+        }
+        setTimeout(() => { isTransitioning = false; }, 500);
+    } else { goToPhotoScreen(); }
+}
+
+window.handleReasonClick = function() {
+    const btn = document.getElementById('reasonsBtn');
+    gsap.to(btn, { scale:0.9, duration:0.1, yoyo:true, repeat:1 });
+    displayReason();
+};
+
+window.goToReasonsScreen = function() {
+    birthdayAudio.pause();
+    birthdayAudio.currentTime = 0;
+    currentReasonIndex = 0;
+    document.getElementById('reasonsBtn').textContent = "Click Here... 💕";
+    document.getElementById('reasonsBtn').classList.remove('story-mode');
+    document.getElementById('reasonsContainer').innerHTML = '';
+    gsap.to('#cakeScreen', { opacity:0, duration:1, onComplete:()=>{
+        document.getElementById('cakeScreen').classList.remove('show');
+        document.getElementById('reasonsScreen').classList.add('show');
+        updateHistory('reasons');
         displayReason();
-    };
+    }});
+};
 
-    window.goToReasonsScreen = function() {
-        birthdayAudio.pause();
-        birthdayAudio.currentTime = 0;
-        currentReasonIndex = 0;
-        document.getElementById('reasonsBtn').textContent = "Click Here... 💕";
-        document.getElementById('reasonsBtn').classList.remove('story-mode');
-        document.getElementById('reasonsContainer').innerHTML = '';
-        gsap.to('#cakeScreen', { opacity:0, duration:1, onComplete:()=>{
-            document.getElementById('cakeScreen').classList.remove('show');
-            document.getElementById('reasonsScreen').classList.add('show');
-            updateHistory('reasons');
-            displayReason();
-        }});
-    };
+window.goToPhotoScreen = function() {
+    gsap.to('#reasonsScreen', { opacity:0, duration:1, onComplete:()=>{
+        document.getElementById('reasonsScreen').classList.remove('show');
+        document.getElementById('photoScreen').classList.add('show');
+        updateHistory('photo');
+    }});
+};
 
-    window.goToPhotoScreen = function() {
-        gsap.to('#reasonsScreen', { opacity:0, duration:1, onComplete:()=>{
-            document.getElementById('reasonsScreen').classList.remove('show');
-            document.getElementById('photoScreen').classList.add('show');
-            updateHistory('photo');
-        }});
-    };
+window.goToVideoScreen = function() {
+    gsap.to('#photoScreen', { opacity:0, duration:1, onComplete:()=>{
+        document.getElementById('photoScreen').classList.remove('show');
+        document.getElementById('videoScreen').classList.add('show');
+        updateHistory('video');
+    }});
+};
 
-    window.goToVideoScreen = function() {
-        gsap.to('#photoScreen', { opacity:0, duration:1, onComplete:()=>{
-            document.getElementById('photoScreen').classList.remove('show');
-            document.getElementById('videoScreen').classList.add('show');
-            updateHistory('video');
-        }});
-    };
+window.goToLetterScreen = function() {
+    gsap.to('#videoScreen', { opacity:0, duration:1, onComplete:()=>{
+        document.getElementById('videoScreen').classList.remove('show');
+        document.getElementById('letterScreen').classList.add('show');
+        updateHistory('letter');
+    }});
+};
 
-    window.goToLetterScreen = function() {
-        gsap.to('#videoScreen', { opacity:0, duration:1, onComplete:()=>{
-            document.getElementById('videoScreen').classList.remove('show');
-            document.getElementById('letterScreen').classList.add('show');
-            updateHistory('letter');
-        }});
-    };
+window.goToSecretScreen = function() {
+    gsap.to('#letterScreen', { opacity:0, duration:0.5, onComplete:()=>{
+        document.getElementById('letterScreen').classList.remove('show');
+        document.getElementById('secretScreen').classList.add('show');
+        updateHistory('secret');
+    }});
+};
 
-    window.goToSecretScreen = function() {
-        gsap.to('#letterScreen', { opacity:0, duration:0.5, onComplete:()=>{
-            document.getElementById('letterScreen').classList.remove('show');
-            document.getElementById('secretScreen').classList.add('show');
-            updateHistory('secret');
-        }});
-    };
+window.goToInstagram = function() { window.open('https://www.instagram.com/rafahimn', '_blank'); };
+window.openContactPage = function() { document.getElementById('contactPage').classList.add('show'); };
+window.closeContactPage = function() { document.getElementById('contactPage').classList.remove('show'); };
 
-    window.goToInstagram = function() { window.open('https://www.instagram.com/rafahimn', '_blank'); };
-    window.openContactPage = function() { document.getElementById('contactPage').classList.add('show'); };
-    window.closeContactPage = function() { document.getElementById('contactPage').classList.remove('show'); };
+function confetti(options) { if (typeof window.confetti === 'function') window.confetti(options); }
 
-    function confetti(options) { if (typeof window.confetti === 'function') window.confetti(options); }
+updateCountdown();
+setInterval(updateCountdown, 1000);
 
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-
-    window.addEventListener('beforeunload', function() { stopMicrophone(); countdownAudio.pause(); birthdayAudio.pause(); if (resetTimer) clearTimeout(resetTimer); });
+window.addEventListener('beforeunload', function() { stopMicrophone(); countdownAudio.pause(); birthdayAudio.pause(); if (resetTimer) clearTimeout(resetTimer); }); });
 </script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1"></script>
 </body>
